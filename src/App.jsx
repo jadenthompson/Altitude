@@ -1,14 +1,30 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { supabase } from './utils/supabaseClient';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Launch from './pages/Launch';
-import Today from './pages/Today'; // or whatever your main app page is
+import Today from './pages/Today';
+import Auth from './pages/Auth';
 
 function App() {
+  const [session, setSession] = useState(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+  }, []);
+
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Launch />} />
+        <Route path="/" element={session ? <Today /> : <Navigate to="/auth" />} />
         <Route path="/today" element={<Today />} />
-        {/* Add more routes here as needed */}
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/launch" element={<Launch />} />
       </Routes>
     </Router>
   );
