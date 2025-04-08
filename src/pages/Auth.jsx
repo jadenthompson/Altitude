@@ -9,6 +9,7 @@ const Auth = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
   const navigate = useNavigate();
 
   const handleAuth = async (e) => {
@@ -17,7 +18,6 @@ const Auth = () => {
     const { error } = isSignUp
       ? await supabase.auth.signUp({ email, password })
       : await supabase.auth.signInWithPassword({ email, password });
-
     setLoading(false);
     if (error) alert(error.message);
     else navigate('/today');
@@ -36,20 +36,22 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-400 px-4 text-white relative">
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-400 opacity-80 blur-xl z-0" />
+    <div className={`min-h-screen flex flex-col items-center justify-center px-4 relative transition duration-500 ${
+      darkMode ? 'bg-gray-900 text-white' : 'bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-400 text-white'
+    }`}>
+      <div className="absolute inset-0 opacity-60 blur-3xl z-0" />
 
       <div className="relative z-10 max-w-md w-full bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-xl text-center">
         <motion.img
-          src="/altitude-logo.png"
+          src="/assets/altitude-logo.png"
           alt="Altitude Logo"
-          initial={{ y: -50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 1, ease: 'easeOut' }}
-          className="w-20 h-20 mx-auto mb-6"
+          initial={{ scale: 0.5, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 1 }}
+          className="w-16 h-16 mx-auto mb-6"
         />
 
-        <h2 className="text-2xl font-bold mb-4 text-white">
+        <h2 className="text-2xl font-bold mb-4">
           {isSignUp ? 'Create Account' : 'Sign In'}
         </h2>
 
@@ -116,6 +118,15 @@ const Auth = () => {
             onClick={() => setIsSignUp(!isSignUp)}
           >
             {isSignUp ? 'Sign In' : 'Sign Up'}
+          </button>
+        </div>
+
+        <div className="mt-4">
+          <button
+            onClick={() => setDarkMode(!darkMode)}
+            className="text-xs text-indigo-100 underline hover:text-white"
+          >
+            {darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
           </button>
         </div>
       </div>
