@@ -8,19 +8,6 @@ import Onboarding from './pages/Onboarding';
 import BigCalendar from './pages/BigCalendar';
 
 function App() {
-  return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Launch />} />
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/today" element={<Today />} />
-        <Route path="/calendar" element={<BigCalendar />} /> {/* Add this */}
-      </Routes>
-    </Router>
-  );
-}
-
-function App() {
   const [session, setSession] = useState(null);
 
   useEffect(() => {
@@ -37,8 +24,9 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={session ? <Today /> : <Navigate to="/auth" />} />
-        <Route path="/today" element={<Today />} />
         <Route path="/auth" element={<Auth />} />
+        <Route path="/today" element={<Today />} />
+        <Route path="/calendar" element={<BigCalendar />} />
         <Route path="/launch" element={<Launch />} />
         <Route path="/onboarding" element={<Onboarding />} />
       </Routes>
