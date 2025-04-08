@@ -1,41 +1,49 @@
-// src/pages/Launch.jsx
-import React, { useEffect, useRef } from 'react';
-import logo from '../assets/altitude-logo.png';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import logo from '../assets/altitude-logo.png'; // make sure this file is white and exists here
 
 const Launch = () => {
   const navigate = useNavigate();
-  const logoRef = useRef(null);
+  const [animate, setAnimate] = useState(false);
+
+  useEffect(() => {
+    // Trigger animations after mount
+    setTimeout(() => setAnimate(true), 100);
+  }, []);
 
   const handleStart = () => {
     navigate('/today');
   };
 
-  useEffect(() => {
-    const logo = logoRef.current;
-    if (logo) {
-      logo.classList.add('animate-logoFlyIn');
-    }
-  }, []);
-
   return (
-    <div className="min-h-screen w-full overflow-hidden bg-gradient-to-b relative from-[#6a6ff0] via-[#b967d0] to-[#f4a261]">
-      {/* Animated gradient background layer */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#6a6ff0] via-[#b967d0] to-[#f4a261] opacity-80 z-0" />
-
-      {/* Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center h-screen text-white px-4 text-center">
+    <div className="min-h-screen w-full bg-gradient-to-b from-[#6a6ff0] via-[#b967d0] to-[#f4a261] overflow-hidden flex items-center justify-center">
+      <div className="text-white text-center px-6 relative z-10">
         <img
-          ref={logoRef}
           src={logo}
           alt="Altitude Logo"
-          className="w-40 md:w-52 mb-8"
+          className={`w-32 md:w-44 mx-auto mb-6 transition-all duration-1000 ease-out transform ${
+            animate ? 'translate-y-0 opacity-100 scale-110' : '-translate-y-20 opacity-0 scale-50'
+          }`}
         />
-        <h1 className="text-4xl md:text-6xl font-bold mb-4">Altitude</h1>
-        <p className="text-lg md:text-2xl mb-10">Go further with altitude</p>
+        <h1
+          className={`text-4xl md:text-6xl font-bold transition-opacity duration-1000 delay-300 ${
+            animate ? 'opacity-100' : 'opacity-0'
+          }`}
+        >
+          Altitude
+        </h1>
+        <p
+          className={`text-lg md:text-2xl mt-2 mb-10 transition-opacity duration-1000 delay-500 ${
+            animate ? 'opacity-90' : 'opacity-0'
+          }`}
+        >
+          Go further with altitude
+        </p>
         <button
           onClick={handleStart}
-          className="bg-[#2d2d85] hover:bg-[#1f1f70] text-white font-semibold text-lg md:text-xl px-8 py-4 rounded-full transition duration-300 shadow-lg"
+          className={`bg-[#2d2d85] hover:bg-[#1f1f70] text-white font-semibold text-lg md:text-xl px-8 py-4 rounded-full transition duration-300 shadow-lg ${
+            animate ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+          }`}
         >
           Get Started
         </button>
