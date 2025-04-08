@@ -3,6 +3,7 @@ import FlightWidget from '../components/FlightWidget';
 import HotelWidget from '../components/HotelWidget';
 import WeatherWidget from '../components/WeatherWidget';
 import CalendarSummaryWidget from '../components/CalendarSummaryWidget';
+import BottomNav from '../components/BottomNav';
 import { supabase } from '../utils/supabaseClient';
 
 const Today = () => {
@@ -15,7 +16,7 @@ const Today = () => {
         data: { user },
       } = await supabase.auth.getUser();
       if (user) {
-        const { data, error } = await supabase
+        const { data } = await supabase
           .from('users')
           .select('full_name')
           .eq('id', user.id)
@@ -38,7 +39,7 @@ const Today = () => {
   }, []);
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-b from-white via-slate-100 to-slate-200 p-4 pb-20">
+    <div className="min-h-screen w-full bg-gradient-to-b from-white via-slate-100 to-slate-200 p-4 pb-28">
       <h2 className="text-xl font-semibold text-gray-800 mb-6">
         {greeting}{firstName ? `, ${firstName}` : ''}.
       </h2>
@@ -48,6 +49,11 @@ const Today = () => {
         <HotelWidget />
         <WeatherWidget />
         <CalendarSummaryWidget />
+      </div>
+
+      {/* Fixed Bottom Navigation */}
+      <div className="fixed bottom-0 left-0 w-full z-50">
+        <BottomNav />
       </div>
     </div>
   );

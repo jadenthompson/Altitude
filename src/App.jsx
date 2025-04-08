@@ -5,6 +5,20 @@ import Launch from './pages/Launch';
 import Today from './pages/Today';
 import Auth from './pages/Auth';
 import Onboarding from './pages/Onboarding';
+import BigCalendar from './pages/BigCalendar';
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Launch />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/today" element={<Today />} />
+        <Route path="/calendar" element={<BigCalendar />} /> {/* Add this */}
+      </Routes>
+    </Router>
+  );
+}
 
 function App() {
   const [session, setSession] = useState(null);
