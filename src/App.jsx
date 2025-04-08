@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Launch from './pages/Launch';
 import Today from './pages/Today';
 import Auth from './pages/Auth';
+import Onboarding from './pages/Onboarding';
 
 function App() {
   const [session, setSession] = useState(null);
@@ -25,6 +26,7 @@ function App() {
         <Route path="/today" element={<Today />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/launch" element={<Launch />} />
+        <Route path="/onboarding" element={<Onboarding />} />
       </Routes>
     </Router>
   );

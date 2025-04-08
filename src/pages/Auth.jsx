@@ -20,7 +20,20 @@ const Auth = () => {
       : await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) alert(error.message);
-    else navigate('/today');
+    else {
+        const { data, error } = await supabase
+          .from('users')
+          .select('full_name')
+          .eq('id', user.id)
+          .maybeSingle();
+      
+        if (!data?.full_name) {
+          navigate('/onboarding');
+        } else {
+          navigate('/today');
+        }
+      }
+      
   };
 
   const handleGoogleLogin = async () => {
