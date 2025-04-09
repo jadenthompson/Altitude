@@ -1,4 +1,3 @@
-// src/pages/BigCalendar.jsx
 import React, { useEffect, useState } from 'react';
 import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
 import moment from 'moment';
@@ -32,28 +31,37 @@ const BigCalendar = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       const { data, error } = await supabase.from('events').select('*');
-      if (!error && data) {
-        const mapped = data.map((evt) => ({
-          ...evt,
-          title: `${eventTypes[evt.type] || ''} ${evt.title || ''}`,
-          start: new Date(evt.start_time),
-          end: evt.end_time ? new Date(evt.end_time) : new Date(evt.start_time),
-        }));
-        setEvents(mapped);
+      if (error) {
+        console.error('Error fetching events:', error.message);
+        return;
       }
+
+      const validEvents = data
+        .filter((evt) => evt.start_time && evt.end_time)
+        .map((evt) => ({
+          id: evt.id,
+          title: `${eventTypes[evt.type] || ''} ${evt.title || 'Untitled Event'}`,
+          start: new Date(evt.start_time),
+          end: new Date(evt.end_time),
+        }));
+
+      setEvents(validEvents);
     };
+
     fetchEvents();
   }, [showModal]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const { title, type, start, end } = form;
+
     const { error } = await supabase.from('events').insert({
-      title,
+      title: title.trim() === '' ? null : title,
       type,
       start_time: new Date(start),
       end_time: new Date(end),
     });
+
     if (!error) {
       setShowModal(false);
       setForm({ title: '', type: 'gig', start: '', end: '' });
@@ -65,7 +73,7 @@ const BigCalendar = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-slate-100 to-slate-200 flex flex-col p-4 pb-28">
       <h1 className="text-3xl md:text-4xl font-extrabold text-center text-gray-800 mb-6 tracking-tight">
-        🗓️ Altitude Calendar
+        📅 Altitude Calendar
       </h1>
 
       <div className="flex-1 overflow-auto max-h-[70vh]">
@@ -74,14 +82,15 @@ const BigCalendar = () => {
           events={events}
           startAccessor="start"
           endAccessor="end"
-          views={[Views.MONTH, Views.WEEK, Views.DAY, Views.AGENDA]}
-          defaultView={Views.MONTH}
-          className="rounded-xl shadow-md bg-white p-2"
+          views={['month', 'week', 'day', 'agenda']}
+          defaultView="month"
+          style={{ height: '100%', minHeight: '70vh' }}
+          className="rounded-xl bg-white p-2 shadow-md"
         />
       </div>
 
       <motion.button
-        whileHover={{ scale: 1.1 }}
+        whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setShowModal(true)}
         className="fixed bottom-20 right-6 p-4 bg-indigo-600 text-white rounded-full shadow-xl hover:bg-indigo-700 z-50"
@@ -97,7 +106,6 @@ const BigCalendar = () => {
             <form onSubmit={handleSubmit} className="space-y-4">
               <input
                 type="text"
-                required
                 placeholder="Event Title"
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
