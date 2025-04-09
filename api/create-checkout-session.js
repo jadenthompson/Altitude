@@ -21,7 +21,7 @@ export default async function handler(req, res) {
       ],
       mode: 'subscription',
       success_url: `${req.headers.origin}/today`,
-      cancel_url: `${req.headers.origin}/plan`,
+      cancel_url: `${req.headers.origin}/`,
     });
 
     return res.status(200).json({ id: session.id });
