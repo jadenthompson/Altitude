@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Calendar, momentLocalizer } from 'react-big-calendar';
+import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { supabase } from '../utils/supabaseClient';
@@ -7,8 +7,6 @@ import { Dialog } from '@headlessui/react';
 import { Plus } from 'lucide-react';
 import { motion } from 'framer-motion';
 import BottomNav from '../components/BottomNav';
-
-
 
 const localizer = momentLocalizer(moment);
 
@@ -23,6 +21,8 @@ const eventTypes = {
 const BigCalendar = () => {
   const [events, setEvents] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [view, setView] = useState(Views.MONTH);
   const [form, setForm] = useState({
     title: '',
     type: 'gig',
@@ -65,9 +65,23 @@ const BigCalendar = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-slate-100 to-slate-200 flex flex-col p-4 pb-28">
-      <h1 className="text-3xl md:text-4xl font-extrabold text-center text-gray-800 mb-6 tracking-tight">
+      <h1 className="text-3xl md:text-4xl font-extrabold text-center text-gray-800 mb-4 tracking-tight">
         🗓️ Tour Calendar
       </h1>
+
+      <div className="flex justify-center mb-4 space-x-2">
+        {['month', 'week', 'day'].map((v) => (
+          <button
+            key={v}
+            onClick={() => setView(v)}
+            className={`px-4 py-2 rounded-xl font-medium shadow-sm transition ${
+              view === v ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700'
+            }`}
+          >
+            {v.charAt(0).toUpperCase() + v.slice(1)}
+          </button>
+        ))}
+      </div>
 
       <div className="flex-1 overflow-auto max-h-[70vh]">
         <Calendar
@@ -75,6 +89,9 @@ const BigCalendar = () => {
           events={events}
           startAccessor="start"
           endAccessor="end"
+          view={view}
+          onView={(v) => setView(v)}
+          onSelectEvent={(event) => setSelectedEvent(event)}
           className="rounded-xl shadow-md bg-white p-2"
         />
       </div>
@@ -134,6 +151,25 @@ const BigCalendar = () => {
                 Save Event
               </button>
             </form>
+          </Dialog.Panel>
+        </div>
+      </Dialog>
+
+      <Dialog open={!!selectedEvent} onClose={() => setSelectedEvent(null)} className="relative z-50">
+        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <Dialog.Panel className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
+            <Dialog.Title className="text-lg font-bold mb-2">{selectedEvent?.title}</Dialog.Title>
+            <p className="text-gray-600 mb-2">{selectedEvent?.type?.toUpperCase()}</p>
+            <p className="text-sm text-gray-500">
+              {moment(selectedEvent?.start).format('ddd, MMM D – h:mm A')} → {moment(selectedEvent?.end).format('h:mm A')}
+            </p>
+            <button
+              onClick={() => setSelectedEvent(null)}
+              className="mt-4 w-full bg-indigo-100 text-indigo-700 py-2 rounded-lg"
+            >
+              Close
+            </button>
           </Dialog.Panel>
         </div>
       </Dialog>
