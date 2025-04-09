@@ -39,10 +39,13 @@ const Plan = () => {
     }
   
     const { data: updatedUser, error: fetchError } = await supabase
-      .from('users')
-      .select('plan')
-      .eq('id', user.id)
-      .maybeSingle();
+  .from('users')
+  .select('plan')
+  .eq('id', user.id)
+  .maybeSingle();
+
+console.log('Fetched plan:', updatedUser, 'Fetch error:', fetchError);
+
   
     if (fetchError) {
       console.error('Fetch error:', fetchError.message);
