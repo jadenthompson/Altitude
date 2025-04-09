@@ -2,50 +2,49 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../utils/supabaseClient';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-
-const countries = [
-  'United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'France', 'Spain', 'Italy', 'Brazil',
-  'South Africa', 'India', 'Japan', 'Mexico', 'Netherlands', 'Sweden', 'Norway', 'New Zealand', 'Argentina',
-  'China', 'Portugal', 'Switzerland', 'Ireland', 'Singapore', 'Thailand', 'Indonesia', 'Belgium', 'Austria'
-];
+import countryList from '../utils/countries'; // Make sure this file exists
 
 const Onboarding = () => {
-  const [fullName, setFullName] = useState('');
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
+  const [fullName, setFullName] = useState('');
   const [country, setCountry] = useState('');
   const [role, setRole] = useState('artist');
   const [artistType, setArtistType] = useState('solo');
   const [darkMode, setDarkMode] = useState(false);
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
-    const getEmail = async () => {
+    const fetchUser = async () => {
       const { data, error } = await supabase.auth.getUser();
-      if (data?.user) setEmail(data.user.email);
+      if (data?.user) {
+        setEmail(data.user.email);
+      }
     };
-    getEmail();
+    fetchUser();
   }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    const { data: sessionData } = await supabase.auth.getUser();
-    const userId = sessionData?.user?.id;
-
-    if (!userId) {
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
       alert('User not found');
       return;
     }
 
-    const { error } = await supabase.from('users').update({
+    const updates = {
       full_name: fullName,
-      email,
       country,
       role,
       artist_type: artistType,
-    }).eq('id', userId);
+    };
+
+    const { error } = await supabase
+      .from('users')
+      .update(updates)
+      .eq('id', user.id);
 
     setLoading(false);
 
@@ -57,10 +56,14 @@ const Onboarding = () => {
   };
 
   return (
-    <div className={`min-h-screen flex flex-col items-center justify-center px-4 transition duration-500 ${
+    <div className={`min-h-screen flex flex-col items-center justify-center px-4 relative transition duration-500 ${
       darkMode ? 'bg-gray-900 text-white' : 'bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-400 text-white'
     }`}>
-      <button onClick={() => navigate('/')} className="absolute top-4 left-4 text-sm underline z-20">
+
+      <button
+        onClick={() => navigate('/')}
+        className="absolute top-4 left-4 text-white text-sm underline hover:text-indigo-200 z-20"
+      >
         ← Back to Home
       </button>
 
@@ -74,36 +77,36 @@ const Onboarding = () => {
           initial={{ scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 1 }}
-          className="cursor-pointer w-10 h-10 mx-auto mb-4"
+          className="cursor-pointer w-16 h-16 mx-auto mb-6"
         />
 
-        <h2 className="text-xl font-bold mb-4">
-          🌍 Let's get you set up
-        </h2>
+        <h2 className="text-xl font-semibold mb-4">🌐 Let’s get you set up</h2>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 text-left">
           <input
             type="text"
             placeholder="Full Name"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            className="w-full p-3 rounded-xl text-black placeholder-gray-500 focus:outline-none"
             required
+            className="w-full p-3 rounded-xl text-black placeholder-gray-500"
           />
+
           <input
             type="email"
             value={email}
             readOnly
-            className="w-full p-3 rounded-xl text-gray-400 bg-gray-100 placeholder-gray-400 cursor-not-allowed"
+            className="w-full p-3 rounded-xl text-gray-500 bg-gray-200 cursor-not-allowed"
           />
+
           <select
             value={country}
             onChange={(e) => setCountry(e.target.value)}
-            className="w-full p-3 rounded-xl text-black"
             required
+            className="w-full p-3 rounded-xl text-black"
           >
             <option value="" disabled>Select Country</option>
-            {countries.map((c) => (
+            {countryList.map((c) => (
               <option key={c} value={c}>{c}</option>
             ))}
           </select>
@@ -113,10 +116,10 @@ const Onboarding = () => {
             onChange={(e) => setRole(e.target.value)}
             className="w-full p-3 rounded-xl text-black"
           >
-            <option value="artist">🖋️ Artist</option>
-            <option value="manager">🫠 Manager</option>
-            <option value="agency">📄 Agency</option>
-            <option value="crew">🚜 Crew</option>
+            <option value="artist">🎤 Artist</option>
+            <option value="manager">🧑‍💼 Manager</option>
+            <option value="agency">🏢 Agency</option>
+            <option value="crew">🧑‍🚀 Crew</option>
           </select>
 
           {role === 'artist' && (
@@ -126,23 +129,20 @@ const Onboarding = () => {
               className="w-full p-3 rounded-xl text-black"
             >
               <option value="solo">Solo Artist</option>
-              <option value="band">Band</option>
+              <option value="band">Band / Group</option>
             </select>
           )}
 
           <button
             type="submit"
-            className="w-full bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-3 rounded-xl transition"
+            className="w-full bg-indigo-700 hover:bg-indigo-800 text-white py-3 rounded-xl font-semibold"
           >
             {loading ? 'Saving...' : 'Continue'}
           </button>
         </form>
 
-        <div className="mt-4">
-          <button
-            onClick={() => setDarkMode(!darkMode)}
-            className="text-xs text-indigo-100 underline hover:text-white"
-          >
+        <div className="mt-4 text-sm text-indigo-100">
+          <button onClick={() => setDarkMode(!darkMode)} className="underline">
             {darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
           </button>
         </div>
