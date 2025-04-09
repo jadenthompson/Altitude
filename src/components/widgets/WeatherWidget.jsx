@@ -1,7 +1,7 @@
 // src/components/WeatherWidget.jsx
 import React, { useEffect, useState } from 'react';
 import { MapPin, Thermometer } from 'lucide-react';
-import { supabase } from '../utils/supabaseClient';
+import { supabase } from '../../utils/supabaseClient';
 
 const WeatherWidget = () => {
   const [weather, setWeather] = useState(null);

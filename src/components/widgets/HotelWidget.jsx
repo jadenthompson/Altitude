@@ -1,6 +1,6 @@
 // src/components/HotelWidget.jsx
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../utils/supabaseClient';
+import { supabase } from '../../utils/supabaseClient';
 import { BedDouble } from 'lucide-react';
 
 const HotelWidget = () => {

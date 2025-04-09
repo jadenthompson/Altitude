@@ -1,7 +1,7 @@
 // src/components/CrewNotesWidget.jsx
 import React, { useEffect, useState } from 'react';
 import { StickyNote } from 'lucide-react';
-import { supabase } from '../utils/supabaseClient';
+import { supabase } from '../../utils/supabaseClient';
 
 const CrewNotesWidget = () => {
   const [note, setNote] = useState('');

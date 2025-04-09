@@ -1,6 +1,6 @@
 // src/pages/Today.jsx
 import React from 'react';
-import BottomNav from '../components/BottomNav';
+import BottomNav from '../components/widgets/BottomNav';
 import FlightWidget from '../components/widgets/FlightWidget';
 import HotelWidget from '../components/widgets/HotelWidget';
 import WeatherWidget from '../components/widgets/WeatherWidget';

@@ -1,7 +1,7 @@
 // src/components/CalendarSummaryWidget.jsx
 import React, { useEffect, useState } from 'react';
 import { CalendarDays } from 'lucide-react';
-import { supabase } from '../utils/supabaseClient';
+import { supabase } from '../../utils/supabaseClient';
 import dayjs from 'dayjs';
 
 const CalendarSummaryWidget = () => {
