@@ -1,57 +1,48 @@
-// App.jsx
 import React, { useEffect, useState } from 'react';
 import { supabase } from './utils/supabaseClient';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
 import Launch from './pages/Launch';
 import Auth from './pages/Auth';
-import Today from './pages/Today';
-import Onboarding from './pages/Onboarding';
+import Onboarding from './pages/Onboarding'; // You can disable this if skipping for now
 import Plan from './pages/Plan';
+import Today from './pages/Today';
 import BigCalendar from './pages/BigCalendar';
 
 function App() {
   const [session, setSession] = useState(null);
-  const [onboardingComplete, setOnboardingComplete] = useState(false);
-  const [planSelected, setPlanSelected] = useState(false);
+  const [onboardingComplete, setOnboardingComplete] = useState(null);
+  const [planSelected, setPlanSelected] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchUserMeta = async (userId) => {
-    const { data, error } = await supabase
-      .from('users')
-      .select('onboarding_complete, plan')
-      .eq('id', userId)
-      .single();
-
-    if (!error && data) {
-      setOnboardingComplete(data.onboarding_complete);
-      setPlanSelected(!!data.plan);
-    } else {
-      console.warn('Could not fetch user meta:', error);
-    }
-  };
-
   useEffect(() => {
-    const init = async () => {
+    const checkSession = async () => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
-
       setSession(session);
-      if (session?.user) await fetchUserMeta(session.user.id);
+
+      if (session?.user) {
+        const { data, error } = await supabase
+          .from('users')
+          .select('onboarding_complete, plan')
+          .eq('id', session.user.id)
+          .maybeSingle();
+
+        if (!error && data) {
+          setOnboardingComplete(data.onboarding_complete);
+          setPlanSelected(!!data.plan);
+        }
+      }
+
       setLoading(false);
     };
 
-    init();
+    checkSession();
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      if (session?.user) fetchUserMeta(session.user.id);
     });
-
-    return () => {
-      listener.subscription.unsubscribe();
-    };
   }, []);
 
   if (loading) return null;
@@ -60,6 +51,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Launch />} />
+
         <Route
           path="/auth"
           element={
@@ -74,26 +66,29 @@ function App() {
             )
           }
         />
+
         <Route
           path="/onboarding"
           element={
             session ? (
-              !onboardingComplete ? <Onboarding onComplete={() => setOnboardingComplete(true)} /> : <Navigate to="/plan" />
+              !onboardingComplete ? <Onboarding /> : <Navigate to="/plan" />
             ) : (
               <Navigate to="/auth" />
             )
           }
         />
+
         <Route
           path="/plan"
           element={
             session ? (
-              onboardingComplete ? <Plan onPlanSelected={() => setPlanSelected(true)} /> : <Navigate to="/onboarding" />
+              !planSelected ? <Plan /> : <Navigate to="/today" />
             ) : (
               <Navigate to="/auth" />
             )
           }
         />
+
         <Route
           path="/today"
           element={
@@ -104,6 +99,7 @@ function App() {
             )
           }
         />
+
         <Route
           path="/calendar"
           element={
