@@ -1,11 +1,10 @@
 // src/pages/Today.jsx
-import React from 'react';
-import BottomNav from '../components/widgets/BottomNav';
 import FlightWidget from '../components/widgets/FlightWidget';
 import HotelWidget from '../components/widgets/HotelWidget';
 import WeatherWidget from '../components/widgets/WeatherWidget';
-import CityPhotoWidget from '../components/widgets/CityPhotoWidget';
 import CalendarSummaryWidget from '../components/widgets/CalendarSummaryWidget';
+import CityPhotoWidget from '../components/widgets/CityPhotoWidget';
+
 
 const Today = () => {
   return (
