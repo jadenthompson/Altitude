@@ -17,18 +17,16 @@ const Plan = () => {
       data: { user },
     } = await supabase.auth.getUser();
 
-    const { error } = await supabase
-      .from('users')
-      .update({ plan: selectedPlan })
-      .eq('id', user.id);
-
-    setLoading(false);
-
-    if (error) {
-      alert('Error saving plan: ' + error.message);
-    } else {
-      navigate('/today'); // ✅ Redirect directly to dashboard
+    // Save selected plan (optional — for later use)
+    if (user) {
+      await supabase
+        .from('users')
+        .update({ plan: selectedPlan })
+        .eq('id', user.id);
     }
+
+    navigate('/today'); // ✅ Always go to Today
+    setLoading(false);
   };
 
   return (
