@@ -72,8 +72,9 @@ const BigCalendar = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-slate-100 to-slate-200 flex flex-col p-4 pb-28">
       <h1 className="text-3xl md:text-4xl font-extrabold text-center text-gray-800 mb-6 tracking-tight">
-        🗓️ Tour Calendar
-      </h1>
+  Altitude Calendar
+</h1>
+
 
       <div className="flex-1 overflow-auto max-h-[70vh]">
         <Calendar
