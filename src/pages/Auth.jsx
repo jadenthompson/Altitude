@@ -1,54 +1,57 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { supabase } from '../utils/supabaseClient';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
-const Auth = () => {
+const Onboarding = () => {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [fullName, setFullName] = useState('');
+  const [country, setCountry] = useState('');
+  const [role, setRole] = useState('artist');
+  const [artistType, setArtistType] = useState('solo');
   const [loading, setLoading] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const navigate = useNavigate();
 
-  const handleAuth = async (e) => {
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) setEmail(user.email);
+    };
+    fetchUser();
+  }, []);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    let result;
-    if (isSignUp) {
-      result = await supabase.auth.signUp({ email, password });
-    } else {
-      result = await supabase.auth.signInWithPassword({ email, password });
-    }
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return alert('User not found');
 
+    const updates = {
+      id: user.id,
+      email,
+      full_name: fullName,
+      country,
+      role,
+      artist_type: role === 'artist' ? artistType : null,
+      has_onboarded: true,
+    };
+
+    const { error } = await supabase.from('users').upsert(updates, { onConflict: ['id'] });
     setLoading(false);
 
-    if (result.error) {
-      alert(result.error.message);
-    } else if (result.data?.user) {
-      navigate('/today');
+    if (error) {
+      alert('Error saving your info: ' + error.message);
+    } else {
+      navigate('/plan');
     }
-  };
-
-  const handleGoogleLogin = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
-    if (error) alert(error.message);
-  };
-
-  const handleForgotPassword = async () => {
-    if (!email) return alert('Please enter your email first.');
-    const { error } = await supabase.auth.resetPasswordForEmail(email);
-    if (error) alert(error.message);
-    else alert('Password reset link sent.');
   };
 
   return (
     <div className={`min-h-screen flex flex-col items-center justify-center px-4 relative transition duration-500 ${
       darkMode ? 'bg-gray-900 text-white' : 'bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-400 text-white'
     }`}>
-
       {/* 🔙 Back to Home */}
       <button
         onClick={() => navigate('/')}
@@ -70,75 +73,64 @@ const Auth = () => {
           className="cursor-pointer w-16 h-16 mx-auto mb-6"
         />
 
-        <h2 className="text-2xl font-bold mb-4">
-          {isSignUp ? 'Create Account' : 'Sign In'}
-        </h2>
+        <h2 className="text-2xl font-bold mb-4">🧭 Let’s get you set up</h2>
 
-        <form onSubmit={handleAuth} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            type="text"
+            placeholder="Full Name"
+            value={fullName}
+            required
+            onChange={(e) => setFullName(e.target.value)}
+            className="w-full p-3 rounded-xl text-black placeholder-gray-500 focus:outline-none"
+          />
+
           <input
             type="email"
-            placeholder="Email"
             value={email}
-            required
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-3 rounded-xl text-black placeholder-gray-500 focus:outline-none"
+            disabled
+            className="w-full p-3 rounded-xl text-gray-500 bg-gray-100 cursor-not-allowed"
           />
+
           <input
-            type="password"
-            placeholder="Password"
-            value={password}
+            type="text"
+            placeholder="Country"
+            value={country}
             required
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => setCountry(e.target.value)}
             className="w-full p-3 rounded-xl text-black placeholder-gray-500 focus:outline-none"
           />
 
-          <div className="flex justify-between items-center text-sm text-white/80 px-1">
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={rememberMe}
-                onChange={() => setRememberMe(!rememberMe)}
-              />
-              Remember me
-            </label>
-            {!isSignUp && (
-              <button
-                type="button"
-                onClick={handleForgotPassword}
-                className="text-indigo-200 hover:underline"
-              >
-                Forgot Password?
-              </button>
-            )}
-          </div>
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            className="w-full p-3 rounded-xl text-black"
+          >
+            <option value="artist">🎤 Artist</option>
+            <option value="manager">🧑‍💼 Manager</option>
+            <option value="agency">🏢 Agency</option>
+            <option value="crew">🧑‍🚀 Crew</option>
+          </select>
+
+          {role === 'artist' && (
+            <select
+              value={artistType}
+              onChange={(e) => setArtistType(e.target.value)}
+              className="w-full p-3 rounded-xl text-black"
+            >
+              <option value="solo">Solo Artist</option>
+              <option value="band">Band / Group</option>
+            </select>
+          )}
 
           <button
             type="submit"
+            disabled={loading}
             className="w-full bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-3 rounded-xl transition duration-200"
           >
-            {loading ? (isSignUp ? 'Creating...' : 'Signing in...') : isSignUp ? 'Sign Up' : 'Sign In'}
+            {loading ? 'Saving...' : 'Continue'}
           </button>
         </form>
-
-        <div className="my-6 text-gray-200">or</div>
-
-        <button
-          onClick={handleGoogleLogin}
-          className="w-full flex items-center justify-center gap-3 bg-white text-gray-700 font-semibold py-3 rounded-xl hover:bg-gray-100 transition"
-        >
-          <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
-          Continue with Google
-        </button>
-
-        <div className="mt-6 text-sm text-white/80">
-          {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
-          <button
-            className="underline text-white hover:text-indigo-200"
-            onClick={() => setIsSignUp(!isSignUp)}
-          >
-            {isSignUp ? 'Sign In' : 'Sign Up'}
-          </button>
-        </div>
 
         <div className="mt-4">
           <button
@@ -153,4 +145,4 @@ const Auth = () => {
   );
 };
 
-export default Auth;
+export default Onboarding;
