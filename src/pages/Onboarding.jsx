@@ -4,50 +4,51 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 const countries = [
-  "United States", "United Kingdom", "Canada", "Australia", "Germany", "France",
-  "Spain", "Italy", "Netherlands", "Sweden", "Brazil", "Japan", "India", "South Africa",
-  "Mexico", "New Zealand", "Norway", "Ireland", "Portugal", "Switzerland", "Argentina",
-  "Belgium", "Denmark", "Finland", "Greece", "Poland", "South Korea", "Turkey", "UAE", "Other"
+  'United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'France', 'Spain', 'Italy', 'Brazil',
+  'South Africa', 'India', 'Japan', 'Mexico', 'Netherlands', 'Sweden', 'Norway', 'New Zealand', 'Argentina',
+  'China', 'Portugal', 'Switzerland', 'Ireland', 'Singapore', 'Thailand', 'Indonesia', 'Belgium', 'Austria'
 ];
 
 const Onboarding = () => {
-  const navigate = useNavigate();
-  const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
   const [country, setCountry] = useState('');
   const [role, setRole] = useState('artist');
   const [artistType, setArtistType] = useState('solo');
-  const [loading, setLoading] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const getEmail = async () => {
       const { data, error } = await supabase.auth.getUser();
-      if (error || !data?.user) {
-        alert('User not found');
-        navigate('/auth');
-        return;
-      }
-      setEmail(data.user.email);
+      if (data?.user) setEmail(data.user.email);
     };
-    fetchUser();
-  }, [navigate]);
+    getEmail();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await supabase
-      .from('users')
-      .update({
-        full_name: fullName,
-        country,
-        role,
-        artist_type: role === 'artist' ? artistType : null,
-      })
-      .eq('email', email);
+    const { data: sessionData } = await supabase.auth.getUser();
+    const userId = sessionData?.user?.id;
+
+    if (!userId) {
+      alert('User not found');
+      return;
+    }
+
+    const { error } = await supabase.from('users').update({
+      full_name: fullName,
+      email,
+      country,
+      role,
+      artist_type: artistType,
+    }).eq('id', userId);
 
     setLoading(false);
+
     if (error) {
       alert(error.message);
     } else {
@@ -59,10 +60,7 @@ const Onboarding = () => {
     <div className={`min-h-screen flex flex-col items-center justify-center px-4 transition duration-500 ${
       darkMode ? 'bg-gray-900 text-white' : 'bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-400 text-white'
     }`}>
-      <button
-        onClick={() => navigate('/')}
-        className="absolute top-4 left-4 text-white text-sm underline hover:text-indigo-200 z-20"
-      >
+      <button onClick={() => navigate('/')} className="absolute top-4 left-4 text-sm underline z-20">
         ← Back to Home
       </button>
 
@@ -76,29 +74,33 @@ const Onboarding = () => {
           initial={{ scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 1 }}
-          className="cursor-pointer w-14 h-14 mx-auto mb-4"
+          className="cursor-pointer w-10 h-10 mx-auto mb-4"
         />
 
-        <h2 className="text-xl font-semibold mb-6">🌍 Let’s get you set up</h2>
+        <h2 className="text-xl font-bold mb-4">
+          🌍 Let's get you set up
+        </h2>
 
-        <form onSubmit={handleSubmit} className="space-y-4 text-left">
-          {/* Hidden Email */}
-          <input type="hidden" value={email} />
-
+        <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="text"
             placeholder="Full Name"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            required
             className="w-full p-3 rounded-xl text-black placeholder-gray-500 focus:outline-none"
+            required
           />
-
+          <input
+            type="email"
+            value={email}
+            readOnly
+            className="w-full p-3 rounded-xl text-gray-400 bg-gray-100 placeholder-gray-400 cursor-not-allowed"
+          />
           <select
             value={country}
             onChange={(e) => setCountry(e.target.value)}
+            className="w-full p-3 rounded-xl text-black"
             required
-            className="w-full p-3 rounded-xl text-black focus:outline-none"
           >
             <option value="" disabled>Select Country</option>
             {countries.map((c) => (
@@ -109,30 +111,28 @@ const Onboarding = () => {
           <select
             value={role}
             onChange={(e) => setRole(e.target.value)}
-            required
-            className="w-full p-3 rounded-xl text-black focus:outline-none"
+            className="w-full p-3 rounded-xl text-black"
           >
-            <option value="agency">Agency</option>
-            <option value="manager">Manager</option>
-            <option value="artist">Artist</option>
-            <option value="crew">Crew</option>
+            <option value="artist">🖋️ Artist</option>
+            <option value="manager">🫠 Manager</option>
+            <option value="agency">📄 Agency</option>
+            <option value="crew">🚜 Crew</option>
           </select>
 
           {role === 'artist' && (
             <select
               value={artistType}
               onChange={(e) => setArtistType(e.target.value)}
-              className="w-full p-3 rounded-xl text-black focus:outline-none"
+              className="w-full p-3 rounded-xl text-black"
             >
               <option value="solo">Solo Artist</option>
-              <option value="band">Band / Group</option>
+              <option value="band">Band</option>
             </select>
           )}
 
           <button
             type="submit"
-            disabled={loading}
-            className="w-full bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-3 rounded-xl transition duration-200"
+            className="w-full bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-3 rounded-xl transition"
           >
             {loading ? 'Saving...' : 'Continue'}
           </button>
