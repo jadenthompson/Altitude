@@ -13,50 +13,55 @@ const Plan = () => {
 
   const handleContinue = async () => {
     setLoading(true);
-
+  
     const {
       data: { user },
       error: userError,
     } = await supabase.auth.getUser();
-
+  
     if (!user || userError) {
       alert('Error fetching user.');
-      console.error('User fetch error:', userError);
+      console.error(userError);
       setLoading(false);
       return;
     }
-
+  
     const { error: updateError } = await supabase
       .from('users')
       .update({ plan: selectedPlan })
       .eq('id', user.id);
-
+  
     if (updateError) {
-      console.error('Plan update failed:', updateError);
-      alert('Plan was not saved. Please try again.');
+      alert('Error saving plan: ' + updateError.message);
+      console.error(updateError);
       setLoading(false);
       return;
     }
-
+  
     const { data: updatedUser, error: fetchError } = await supabase
       .from('users')
       .select('plan')
       .eq('id', user.id)
       .maybeSingle();
-
+  
     if (fetchError) {
-      console.error('Plan fetch error:', fetchError);
+      console.error('Fetch error:', fetchError.message);
+      alert('Error verifying plan update.');
+      setLoading(false);
+      return;
     }
-
+  
     if (updatedUser?.plan) {
+      console.log('✅ Plan updated:', updatedUser.plan);
       navigate('/today');
     } else {
+      console.warn('⚠️ Plan still null after update:', updatedUser);
       alert('Plan was not saved. Please try again.');
-      console.error('Plan still null after update:', updatedUser);
     }
-
+  
     setLoading(false);
   };
+  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-700 to-pink-500 text-white px-4">
