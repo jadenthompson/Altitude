@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { supabase } from './utils/supabaseClient';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { supabase } from './utils/supabaseClient';
+
 import Launch from './pages/Launch';
 import Today from './pages/Today';
 import Auth from './pages/Auth';
@@ -23,12 +24,16 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={session ? <Today /> : <Navigate to="/auth" />} />
+        {/* Always show Launch at root */}
+        <Route path="/" element={<Launch />} />
+
+        {/* Auth page */}
         <Route path="/auth" element={<Auth />} />
-        <Route path="/today" element={<Today />} />
-        <Route path="/calendar" element={<BigCalendar />} />
-        <Route path="/launch" element={<Launch />} />
-        <Route path="/onboarding" element={<Onboarding />} />
+
+        {/* Protected routes */}
+        <Route path="/today" element={session ? <Today /> : <Navigate to="/auth" />} />
+        <Route path="/calendar" element={session ? <BigCalendar /> : <Navigate to="/auth" />} />
+        <Route path="/onboarding" element={session ? <Onboarding /> : <Navigate to="/auth" />} />
       </Routes>
     </Router>
   );
