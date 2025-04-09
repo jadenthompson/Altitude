@@ -15,26 +15,26 @@ const Auth = () => {
   const handleAuth = async (e) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = isSignUp
-      ? await supabase.auth.signUp({ email, password })
-      : await supabase.auth.signInWithPassword({ email, password });
+    
+    let result;
+    if (isSignUp) {
+      result = await supabase.auth.signUp({ email, password });
+    } else {
+      result = await supabase.auth.signInWithPassword({ email, password });
+    }
+  
     setLoading(false);
-    if (error) alert(error.message);
-    else {
-        const { data, error } = await supabase
-          .from('users')
-          .select('full_name')
-          .eq('id', user.id)
-          .maybeSingle();
-      
-        if (!data?.full_name) {
-          navigate('/onboarding');
-        } else {
-          navigate('/today');
-        }
+    if (result.error) {
+      alert(result.error.message);
+    } else {
+      // If successful, navigate to the next page
+      const user = result.user; // Ensure user exists here
+      if (user) {
+        navigate('/today'); // Redirect to the /today page
       }
-      
+    }
   };
+  
 
   const handleGoogleLogin = async () => {
     const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
