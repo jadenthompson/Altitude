@@ -14,7 +14,6 @@ const App = () => {
   const [userMeta, setUserMeta] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Get session and user profile
   useEffect(() => {
     const getSessionAndUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -49,8 +48,10 @@ const App = () => {
     return () => listener?.subscription.unsubscribe();
   }, []);
 
-  const onboardingComplete = userMeta?.onboarding_complete === true;
-  const planSelected = userMeta?.plan;
+  // TEMPORARY BYPASS
+  // Commenting these out to allow testing on Vercel/localhost without blocking
+  // const onboardingComplete = userMeta?.onboarding_complete === true;
+  // const planSelected = userMeta?.plan;
 
   if (loading) return null;
 
@@ -61,34 +62,25 @@ const App = () => {
 
         <Route path="/auth" element={
           session ? (
-            !onboardingComplete ? <Navigate to="/onboarding" /> :
-            !planSelected ? <Navigate to="/plan" /> :
+            // <Navigate to={!onboardingComplete ? "/onboarding" : !planSelected ? "/plan" : "/today"} />
             <Navigate to="/today" />
           ) : <Auth />
         } />
 
         <Route path="/onboarding" element={
-          session ? (
-            !onboardingComplete ? <Onboarding /> : <Navigate to="/plan" />
-          ) : <Navigate to="/auth" />
+          session ? <Onboarding /> : <Navigate to="/auth" />
         } />
 
         <Route path="/plan" element={
-          session ? (
-            !planSelected ? <Plan /> : <Navigate to="/today" />
-          ) : <Navigate to="/auth" />
+          session ? <Plan /> : <Navigate to="/auth" />
         } />
 
         <Route path="/today" element={
-          session && onboardingComplete && planSelected ? (
-            <Today />
-          ) : <Navigate to="/auth" />
+          session ? <Today /> : <Navigate to="/auth" />
         } />
 
         <Route path="/calendar" element={
-          session && onboardingComplete && planSelected ? (
-            <BigCalendar />
-          ) : <Navigate to="/auth" />
+          session ? <BigCalendar /> : <Navigate to="/auth" />
         } />
       </Routes>
     </Router>
