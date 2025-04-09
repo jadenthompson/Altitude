@@ -6,7 +6,9 @@ import { supabase } from '../utils/supabaseClient';
 import { Dialog } from '@headlessui/react';
 import { Plus } from 'lucide-react';
 import { motion } from 'framer-motion';
-import BottomNav from '../components/widgets/BottomNav';
+import BottomNav from '../components/BottomNav';
+
+
 
 const localizer = momentLocalizer(moment);
 
