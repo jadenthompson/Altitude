@@ -15,11 +15,20 @@ const Launch = () => {
         <motion.img
           src="/assets/altitude-logo.png"
           alt="Altitude Logo"
-          className="w-20 h-20 mx-auto mb-6"
+          className="w-28 h-28 mx-auto mb-2"
           initial={{ y: -40, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.8, ease: 'easeOut' }}
         />
+
+        <motion.h2
+          className="text-3xl md:text-4xl font-semibold mb-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.6 }}
+        >
+          Altitude
+        </motion.h2>
 
         <motion.h1
           className="text-4xl md:text-6xl font-extrabold mb-4"
