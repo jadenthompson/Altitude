@@ -1,4 +1,3 @@
-// src/pages/BigCalendar.jsx
 import React, { useEffect, useState } from 'react';
 import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
 import moment from 'moment';
@@ -6,7 +5,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { supabase } from '../utils/supabaseClient';
 import { Dialog } from '@headlessui/react';
 import { Plus } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import BottomNav from '../components/BottomNav';
 
 const localizer = momentLocalizer(moment);
@@ -32,35 +31,30 @@ const BigCalendar = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       const { data, error } = await supabase.from('events').select('*');
-
       if (!error && data) {
-        const validEvents = data
-          .filter(evt => evt.title && evt.start_time && evt.end_time)
-          .map(evt => ({
+        const mapped = data
+          .filter((evt) => evt.title)
+          .map((evt) => ({
             ...evt,
             title: `${eventTypes[evt.type] || ''} ${evt.title}`,
             start: new Date(evt.start_time),
-            end: new Date(evt.end_time),
+            end: new Date(evt.end_time || evt.start_time),
           }));
-
-        setEvents(validEvents);
+        setEvents(mapped);
       }
     };
-
     fetchEvents();
   }, [showModal]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const { title, type, start, end } = form;
-
     const { error } = await supabase.from('events').insert({
       title,
       type,
       start_time: new Date(start),
       end_time: new Date(end),
     });
-
     if (!error) {
       setShowModal(false);
       setForm({ title: '', type: 'gig', start: '', end: '' });
@@ -71,10 +65,14 @@ const BigCalendar = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-slate-100 to-slate-200 flex flex-col p-4 pb-28">
-      <h1 className="text-3xl md:text-4xl font-extrabold text-center text-gray-800 mb-6 tracking-tight">
-  Altitude Calendar
-</h1>
-
+      <motion.h1
+        className="text-3xl md:text-4xl font-extrabold text-center text-gray-800 mb-6 tracking-tight"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        📅 Altitude Calendar
+      </motion.h1>
 
       <div className="flex-1 overflow-auto max-h-[70vh]">
         <Calendar
@@ -82,10 +80,9 @@ const BigCalendar = () => {
           events={events}
           startAccessor="start"
           endAccessor="end"
-          views={[Views.MONTH, Views.WEEK, Views.DAY, Views.AGENDA]}
+          className="rounded-xl shadow-md bg-white p-2"
+          views={[Views.MONTH, Views.AGENDA]}
           defaultView={Views.MONTH}
-          style={{ height: '100%', minHeight: '500px' }}
-          className="rounded-xl bg-white p-4 shadow-md"
         />
       </div>
 
@@ -98,55 +95,71 @@ const BigCalendar = () => {
         <Plus className="w-6 h-6" />
       </motion.button>
 
-      <Dialog open={showModal} onClose={() => setShowModal(false)} className="relative z-50">
-        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-        <div className="fixed inset-0 flex items-center justify-center p-4">
-          <Dialog.Panel className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
-            <Dialog.Title className="text-lg font-bold mb-4">Add New Event</Dialog.Title>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <input
-                type="text"
-                required
-                placeholder="Event Title"
-                value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-                className="w-full p-3 rounded-lg border"
-              />
-              <select
-                value={form.type}
-                onChange={(e) => setForm({ ...form, type: e.target.value })}
-                className="w-full p-3 rounded-lg border"
+      <AnimatePresence>
+        {showModal && (
+          <Dialog open={showModal} onClose={() => setShowModal(false)} className="relative z-50">
+            <motion.div
+              className="fixed inset-0 bg-black/30"
+              aria-hidden="true"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            />
+            <div className="fixed inset-0 flex items-center justify-center p-4">
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl"
               >
-                <option value="gig">🪩 Gig</option>
-                <option value="press">📸 Press</option>
-                <option value="hotel">🏨 Hotel</option>
-                <option value="travel">✈️ Travel</option>
-                <option value="crew">🧑‍🚀 Crew</option>
-              </select>
-              <input
-                type="datetime-local"
-                value={form.start}
-                required
-                onChange={(e) => setForm({ ...form, start: e.target.value })}
-                className="w-full p-3 rounded-lg border"
-              />
-              <input
-                type="datetime-local"
-                value={form.end}
-                required
-                onChange={(e) => setForm({ ...form, end: e.target.value })}
-                className="w-full p-3 rounded-lg border"
-              />
-              <button
-                type="submit"
-                className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700"
-              >
-                Save Event
-              </button>
-            </form>
-          </Dialog.Panel>
-        </div>
-      </Dialog>
+                <Dialog.Title className="text-lg font-bold mb-4">Add New Event</Dialog.Title>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <input
+                    type="text"
+                    required
+                    placeholder="Event Title"
+                    value={form.title}
+                    onChange={(e) => setForm({ ...form, title: e.target.value })}
+                    className="w-full p-3 rounded-lg border"
+                  />
+                  <select
+                    value={form.type}
+                    onChange={(e) => setForm({ ...form, type: e.target.value })}
+                    className="w-full p-3 rounded-lg border"
+                  >
+                    <option value="gig">🪩 Gig</option>
+                    <option value="press">📸 Press</option>
+                    <option value="hotel">🏨 Hotel</option>
+                    <option value="travel">✈️ Travel</option>
+                    <option value="crew">🧑‍🚀 Crew</option>
+                  </select>
+                  <input
+                    type="datetime-local"
+                    value={form.start}
+                    required
+                    onChange={(e) => setForm({ ...form, start: e.target.value })}
+                    className="w-full p-3 rounded-lg border"
+                  />
+                  <input
+                    type="datetime-local"
+                    value={form.end}
+                    required
+                    onChange={(e) => setForm({ ...form, end: e.target.value })}
+                    className="w-full p-3 rounded-lg border"
+                  />
+                  <button
+                    type="submit"
+                    className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700"
+                  >
+                    Save Event
+                  </button>
+                </form>
+              </motion.div>
+            </div>
+          </Dialog>
+        )}
+      </AnimatePresence>
 
       <BottomNav />
     </div>
