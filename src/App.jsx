@@ -6,6 +6,7 @@ import Launch from './pages/Launch';
 import Auth from './pages/Auth';
 import BigCalendar from './pages/BigCalendar';
 import Today from './pages/Today';
+import Profile from './pages/Profile';
 
 const App = () => {
   const [session, setSession] = useState(null);
@@ -59,6 +60,8 @@ const App = () => {
           }
 
         />
+        
+        <Route path="/profile" element={<Profile />} />
 
 <Route
   path="/today"
