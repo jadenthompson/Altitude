@@ -1,58 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import FlightWidget from '../components/FlightWidget';
-import HotelWidget from '../components/HotelWidget';
-import WeatherWidget from '../components/WeatherWidget';
-import CalendarSummaryWidget from '../components/CalendarSummaryWidget';
-import BottomNav from '../components/BottomNav';
-import { supabase } from '../utils/supabaseClient';
+// src/pages/Today.jsx
+import React from 'react';
 
 const Today = () => {
-  const [greeting, setGreeting] = useState('');
-  const [firstName, setFirstName] = useState('');
-
-  useEffect(() => {
-    const loadUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (user) {
-        const { data } = await supabase
-          .from('users')
-          .select('full_name')
-          .eq('id', user.id)
-          .maybeSingle();
-
-        if (data?.full_name) {
-          const name = data.full_name.split(' ')[0];
-          setFirstName(name);
-        }
-      }
-    };
-
-    const now = new Date();
-    const hour = now.getHours();
-    if (hour < 12) setGreeting('Good morning');
-    else if (hour < 18) setGreeting('Good afternoon');
-    else setGreeting('Good evening');
-
-    loadUser();
-  }, []);
-
   return (
-    <div className="min-h-screen w-full bg-gradient-to-b from-white via-slate-100 to-slate-200 p-4 pb-28">
-      <h2 className="text-xl font-semibold text-gray-800 mb-6">
-        {greeting}{firstName ? `, ${firstName}` : ''}.
-      </h2>
-
-      <div className="space-y-6">
-        <FlightWidget />
-        <HotelWidget />
-        <WeatherWidget />
-        <CalendarSummaryWidget />
-      </div>
-
-      <div className="fixed bottom-0 left-0 w-full z-50">
-        <BottomNav />
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-indigo-700 text-white flex items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-4xl font-bold mb-4">Welcome to TourLife</h1>
+        <p className="text-lg opacity-80">This is your Today page. More widgets coming soon!</p>
       </div>
     </div>
   );

@@ -4,8 +4,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { supabase } from './utils/supabaseClient';
 import Launch from './pages/Launch';
 import Auth from './pages/Auth';
-import Today from './pages/Today';
 import BigCalendar from './pages/BigCalendar';
+import Today from './pages/Today';
 
 const App = () => {
   const [session, setSession] = useState(null);
@@ -57,13 +57,15 @@ const App = () => {
           element={
             session ? <Navigate to="/today" /> : <Auth />
           }
+
         />
-        <Route
-          path="/today"
-          element={
-            session ? <Today /> : <Navigate to="/auth" />
-          }
-        />
+
+<Route
+  path="/today"
+  element={
+    session ? <Today /> : <Navigate to="/auth" />
+  }
+/>
         <Route
           path="/calendar"
           element={
