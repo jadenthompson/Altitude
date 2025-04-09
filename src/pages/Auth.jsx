@@ -15,24 +15,22 @@ const Auth = () => {
   const handleAuth = async (e) => {
     e.preventDefault();
     setLoading(true);
-  
+
     let result;
     if (isSignUp) {
       result = await supabase.auth.signUp({ email, password });
     } else {
       result = await supabase.auth.signInWithPassword({ email, password });
     }
-  
+
     setLoading(false);
-  
+
     if (result.error) {
       alert(result.error.message);
     } else if (result.data?.user) {
       navigate('/today');
     }
   };
-  
-  
 
   const handleGoogleLogin = async () => {
     const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
@@ -50,16 +48,26 @@ const Auth = () => {
     <div className={`min-h-screen flex flex-col items-center justify-center px-4 relative transition duration-500 ${
       darkMode ? 'bg-gray-900 text-white' : 'bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-400 text-white'
     }`}>
+
+      {/* 🔙 Back to Home */}
+      <button
+        onClick={() => navigate('/')}
+        className="absolute top-4 left-4 text-white text-sm underline hover:text-indigo-200 z-20"
+      >
+        ← Back to Home
+      </button>
+
       <div className="absolute inset-0 opacity-60 blur-3xl z-0" />
 
       <div className="relative z-10 max-w-md w-full bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-xl text-center">
         <motion.img
           src="/assets/altitude-logo.png"
           alt="Altitude Logo"
+          onClick={() => navigate('/')}
           initial={{ scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 1 }}
-          className="w-16 h-16 mx-auto mb-6"
+          className="cursor-pointer w-16 h-16 mx-auto mb-6"
         />
 
         <h2 className="text-2xl font-bold mb-4">
