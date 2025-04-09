@@ -1,95 +1,62 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabaseClient';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
+const countries = [
+  "United States", "United Kingdom", "Canada", "Australia", "Germany", "France",
+  "Spain", "Italy", "Netherlands", "Sweden", "Brazil", "Japan", "India", "South Africa",
+  "Mexico", "New Zealand", "Norway", "Ireland", "Portugal", "Switzerland", "Argentina",
+  "Belgium", "Denmark", "Finland", "Greece", "Poland", "South Korea", "Turkey", "UAE", "Other"
+];
+
 const Onboarding = () => {
+  const navigate = useNavigate();
+  const [darkMode, setDarkMode] = useState(false);
+  const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [country, setCountry] = useState('');
   const [role, setRole] = useState('artist');
-  const [subRole, setSubRole] = useState('solo');
-  const [darkMode, setDarkMode] = useState(false);
+  const [artistType, setArtistType] = useState('solo');
   const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState('');
-  const navigate = useNavigate();
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) {
-        setEmail(user.email);
+    const fetchEmail = async () => {
+      const { data, error } = await supabase.auth.getUser();
+      if (data?.user?.email) {
+        setEmail(data.user.email);
       } else {
         alert('User not found');
         navigate('/auth');
       }
-    });
+    };
+    fetchEmail();
   }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      alert('User not found');
-      return;
-    }
-
     const { error } = await supabase.from('users').update({
       full_name: fullName,
       country,
       role,
-      sub_role: subRole,
-    }).eq('id', user.id);
+      artist_type: artistType
+    }).eq('email', email);
 
     setLoading(false);
 
-    if (error) alert(error.message);
-    else navigate('/plan');
+    if (error) {
+      alert(error.message);
+    } else {
+      navigate('/plan');
+    }
   };
 
-  const countryList = [
-    "Afghanistan", "Albania", "Algeria", "American Samoa", "Andorra",
-    "Angola", "Anguilla", "Antarctica", "Antigua and Barbuda", "Argentina",
-    "Armenia", "Aruba", "Australia", "Austria", "Azerbaijan",
-    "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus",
-    "Belgium", "Belize", "Benin", "Bermuda", "Bhutan",
-    "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei",
-    "Bulgaria", "Burkina Faso", "Burundi", "Cambodia", "Cameroon",
-    "Canada", "Cape Verde", "Cayman Islands", "Central African Republic",
-    "Chad", "Chile", "China", "Colombia", "Comoros",
-    "Congo", "Costa Rica", "Croatia", "Cuba", "Cyprus",
-    "Czech Republic", "Denmark", "Djibouti", "Dominica", "Dominican Republic",
-    "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea",
-    "Estonia", "Eswatini", "Ethiopia", "Fiji", "Finland", "France",
-    "Gabon", "Gambia", "Georgia", "Germany", "Ghana",
-    "Greece", "Grenada", "Guatemala", "Guinea", "Guyana",
-    "Haiti", "Honduras", "Hungary", "Iceland", "India",
-    "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy",
-    "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya", "Kiribati",
-    "Kuwait", "Kyrgyzstan", "Laos", "Latvia", "Lebanon", "Lesotho",
-    "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg",
-    "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta",
-    "Mauritania", "Mauritius", "Mexico", "Moldova", "Monaco", "Mongolia",
-    "Montenegro", "Morocco", "Mozambique", "Myanmar", "Namibia", "Nepal",
-    "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Korea",
-    "North Macedonia", "Norway", "Oman", "Pakistan", "Palau", "Panama",
-    "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland",
-    "Portugal", "Qatar", "Romania", "Russia", "Rwanda", "Saint Kitts and Nevis",
-    "Saint Lucia", "Saint Vincent", "Samoa", "San Marino", "Saudi Arabia",
-    "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore",
-    "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa",
-    "South Korea", "South Sudan", "Spain", "Sri Lanka", "Sudan", "Suriname",
-    "Sweden", "Switzerland", "Syria", "Taiwan", "Tajikistan", "Tanzania",
-    "Thailand", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey",
-    "Turkmenistan", "Tuvalu", "Uganda", "Ukraine", "United Arab Emirates",
-    "United Kingdom", "United States", "Uruguay", "Uzbekistan", "Vanuatu",
-    "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe"
-  ];
-
   return (
-    <div className={`min-h-screen flex flex-col items-center justify-center px-4 relative transition duration-500 ${
+    <div className={`min-h-screen flex flex-col items-center justify-center px-4 transition duration-500 ${
       darkMode ? 'bg-gray-900 text-white' : 'bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-400 text-white'
     }`}>
+      {/* Back to home */}
       <button
         onClick={() => navigate('/')}
         className="absolute top-4 left-4 text-white text-sm underline hover:text-indigo-200 z-20"
@@ -97,9 +64,11 @@ const Onboarding = () => {
         ← Back to Home
       </button>
 
+      {/* Background blur */}
       <div className="absolute inset-0 opacity-60 blur-3xl z-0" />
 
       <div className="relative z-10 max-w-md w-full bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-xl text-center">
+        {/* Logo */}
         <motion.img
           src="/assets/altitude-logo.png"
           alt="Altitude Logo"
@@ -107,12 +76,15 @@ const Onboarding = () => {
           initial={{ scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 1 }}
-          className="cursor-pointer w-16 h-16 mx-auto mb-6"
+          className="cursor-pointer w-14 h-14 mx-auto mb-4"
         />
 
-        <h2 className="text-2xl font-bold mb-6">🌍 Let's get you set up</h2>
+        <h2 className="text-xl font-semibold mb-6">🌍 Let’s get you set up</h2>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 text-left">
+          {/* Hidden email */}
+          <input type="hidden" value={email} />
+
           <input
             type="text"
             placeholder="Full Name"
@@ -123,13 +95,13 @@ const Onboarding = () => {
           />
 
           <select
-            required
             value={country}
             onChange={(e) => setCountry(e.target.value)}
-            className="w-full p-3 rounded-xl border text-black"
+            required
+            className="w-full p-3 rounded-xl text-black focus:outline-none"
           >
-            <option value="">Select your country</option>
-            {countryList.map((c) => (
+            <option value="" disabled>Select Country</option>
+            {countries.map((c) => (
               <option key={c} value={c}>{c}</option>
             ))}
           </select>
@@ -137,27 +109,30 @@ const Onboarding = () => {
           <select
             value={role}
             onChange={(e) => setRole(e.target.value)}
-            className="w-full p-3 rounded-xl border text-black"
+            required
+            className="w-full p-3 rounded-xl text-black focus:outline-none"
           >
-            <option value="artist">🎤 Artist</option>
-            <option value="manager">🎧 Manager</option>
-            <option value="agency">🏢 Agency</option>
-            <option value="crew">🧑‍🚀 Crew</option>
+            <option value="agency">Agency</option>
+            <option value="manager">Manager</option>
+            <option value="artist">Artist</option>
+            <option value="crew">Crew</option>
           </select>
 
-          <select
-            value={subRole}
-            onChange={(e) => setSubRole(e.target.value)}
-            className="w-full p-3 rounded-xl border text-black"
-          >
-            <option value="solo">Solo Artist</option>
-            <option value="band">Part of a Band</option>
-          </select>
+          {role === 'artist' && (
+            <select
+              value={artistType}
+              onChange={(e) => setArtistType(e.target.value)}
+              className="w-full p-3 rounded-xl text-black focus:outline-none"
+            >
+              <option value="solo">Solo Artist</option>
+              <option value="band">Band / Group</option>
+            </select>
+          )}
 
           <button
             type="submit"
-            className="w-full bg-indigo-800 text-white font-semibold py-3 rounded-xl hover:bg-indigo-900 transition"
             disabled={loading}
+            className="w-full bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-3 rounded-xl transition duration-200"
           >
             {loading ? 'Saving...' : 'Continue'}
           </button>
