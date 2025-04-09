@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Calendar, momentLocalizer } from 'react-big-calendar';
+import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { supabase } from '../utils/supabaseClient';
 import { Dialog } from '@headlessui/react';
-import { Plus, CalendarDays } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { motion } from 'framer-motion';
 import BottomNav from '../components/BottomNav';
 
@@ -21,7 +21,6 @@ const eventTypes = {
 const BigCalendar = () => {
   const [events, setEvents] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState(null);
   const [form, setForm] = useState({
     title: '',
     type: 'gig',
@@ -29,39 +28,37 @@ const BigCalendar = () => {
     end: '',
   });
 
-  const handleEventClick = (event) => {
-    setSelectedEvent(event);
-  };
-
-  const closeEventModal = () => {
-    setSelectedEvent(null);
-  };
-
+  // Fetch calendar events from Supabase
   useEffect(() => {
     const fetchEvents = async () => {
       const { data, error } = await supabase.from('events').select('*');
       if (!error && data) {
-        const mapped = data.map((evt) => ({
-          ...evt,
-          title: `${eventTypes[evt.type] || ''} ${evt.title || 'Untitled Event'}`,
-          start: new Date(evt.start_time),
-          end: evt.end_time ? new Date(evt.end_time) : new Date(evt.start_time),
-        }));
+        const mapped = data
+          .filter(evt => evt.title) // Ignore nulls
+          .map(evt => ({
+            ...evt,
+            title: `${eventTypes[evt.type] || ''} ${evt.title}`,
+            start: new Date(evt.start_time),
+            end: new Date(evt.end_time || evt.start_time),
+          }));
         setEvents(mapped);
       }
     };
     fetchEvents();
   }, [showModal]);
 
+  // Submit new event
   const handleSubmit = async (e) => {
     e.preventDefault();
     const { title, type, start, end } = form;
+
     const { error } = await supabase.from('events').insert({
       title,
       type,
       start_time: new Date(start),
       end_time: new Date(end),
     });
+
     if (!error) {
       setShowModal(false);
       setForm({ title: '', type: 'gig', start: '', end: '' });
@@ -71,26 +68,26 @@ const BigCalendar = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-slate-100 to-slate-200 flex flex-col p-4 pb-28">
-      <h1 className="text-3xl md:text-4xl font-extrabold text-center text-gray-800 mb-6 tracking-tight">
-        <CalendarDays className="inline-block w-8 h-8 mr-2 text-indigo-600" />
+    <div className="min-h-screen bg-gradient-to-br from-white via-slate-100 to-slate-200 p-4 pb-28">
+      <h1 className="text-3xl md:text-4xl font-extrabold text-center text-slate-800 mb-6 tracking-tight flex justify-center items-center gap-3">
+        <span role="img" aria-label="calendar">📅</span>
         Altitude Calendar
       </h1>
 
-      <div className="flex-1 overflow-auto max-h-[70vh]">
+      <div className="max-w-6xl mx-auto">
         <Calendar
           localizer={localizer}
           events={events}
           startAccessor="start"
           endAccessor="end"
-          onSelectEvent={handleEventClick}
-          views={['month', 'week', 'day', 'agenda']}
-          popup
-          className="rounded-xl shadow-md bg-white p-2"
+          views={[Views.MONTH, Views.WEEK, Views.DAY, Views.AGENDA]}
+          defaultView={Views.MONTH}
+          style={{ height: 'calc(100vh - 240px)' }}
+          className="bg-white rounded-xl shadow-xl p-4"
         />
       </div>
 
-      {/* Floating Add Button */}
+      {/* Add button */}
       <motion.button
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
@@ -100,7 +97,7 @@ const BigCalendar = () => {
         <Plus className="w-6 h-6" />
       </motion.button>
 
-      {/* Add Event Modal */}
+      {/* Modal for adding new event */}
       <Dialog open={showModal} onClose={() => setShowModal(false)} className="relative z-50">
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
@@ -147,29 +144,6 @@ const BigCalendar = () => {
                 Save Event
               </button>
             </form>
-          </Dialog.Panel>
-        </div>
-      </Dialog>
-
-      {/* View Event Details Modal */}
-      <Dialog open={!!selectedEvent} onClose={closeEventModal} className="relative z-50">
-        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-        <div className="fixed inset-0 flex items-center justify-center p-4">
-          <Dialog.Panel className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
-            <Dialog.Title className="text-lg font-bold mb-4">
-              {selectedEvent?.title || 'Event'}
-            </Dialog.Title>
-            <div className="space-y-2 text-gray-700">
-              <p><strong>Start:</strong> {selectedEvent?.start?.toLocaleString()}</p>
-              <p><strong>End:</strong> {selectedEvent?.end?.toLocaleString()}</p>
-              <p><strong>Type:</strong> {selectedEvent?.type || 'Not specified'}</p>
-            </div>
-            <button
-              onClick={closeEventModal}
-              className="mt-6 w-full bg-gray-100 text-gray-800 py-2 rounded-lg hover:bg-gray-200"
-            >
-              Close
-            </button>
           </Dialog.Panel>
         </div>
       </Dialog>
