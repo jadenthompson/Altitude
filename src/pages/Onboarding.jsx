@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { supabase } from '../utils/supabaseClient';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -12,39 +12,42 @@ const countries = [
 
 const Onboarding = () => {
   const navigate = useNavigate();
-  const [darkMode, setDarkMode] = useState(false);
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [country, setCountry] = useState('');
   const [role, setRole] = useState('artist');
   const [artistType, setArtistType] = useState('solo');
   const [loading, setLoading] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
-    const fetchEmail = async () => {
+    const fetchUser = async () => {
       const { data, error } = await supabase.auth.getUser();
-      if (data?.user?.email) {
-        setEmail(data.user.email);
-      } else {
+      if (error || !data?.user) {
         alert('User not found');
         navigate('/auth');
+        return;
       }
+      setEmail(data.user.email);
     };
-    fetchEmail();
+    fetchUser();
   }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.from('users').update({
-      full_name: fullName,
-      country,
-      role,
-      artist_type: artistType
-    }).eq('email', email);
+
+    const { error } = await supabase
+      .from('users')
+      .update({
+        full_name: fullName,
+        country,
+        role,
+        artist_type: role === 'artist' ? artistType : null,
+      })
+      .eq('email', email);
 
     setLoading(false);
-
     if (error) {
       alert(error.message);
     } else {
@@ -56,7 +59,6 @@ const Onboarding = () => {
     <div className={`min-h-screen flex flex-col items-center justify-center px-4 transition duration-500 ${
       darkMode ? 'bg-gray-900 text-white' : 'bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-400 text-white'
     }`}>
-      {/* Back to home */}
       <button
         onClick={() => navigate('/')}
         className="absolute top-4 left-4 text-white text-sm underline hover:text-indigo-200 z-20"
@@ -64,11 +66,9 @@ const Onboarding = () => {
         ← Back to Home
       </button>
 
-      {/* Background blur */}
       <div className="absolute inset-0 opacity-60 blur-3xl z-0" />
 
       <div className="relative z-10 max-w-md w-full bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-xl text-center">
-        {/* Logo */}
         <motion.img
           src="/assets/altitude-logo.png"
           alt="Altitude Logo"
@@ -82,7 +82,7 @@ const Onboarding = () => {
         <h2 className="text-xl font-semibold mb-6">🌍 Let’s get you set up</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4 text-left">
-          {/* Hidden email */}
+          {/* Hidden Email */}
           <input type="hidden" value={email} />
 
           <input
