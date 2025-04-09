@@ -1,12 +1,11 @@
-import { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
 import { supabase } from './utils/supabaseClient';
-
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Launch from './pages/Launch';
 import Today from './pages/Today';
 import Auth from './pages/Auth';
 import Onboarding from './pages/Onboarding';
-import BigCalendar from './pages/BigCalendar';
+import Plan from './pages/Plan';
 
 function App() {
   const [session, setSession] = useState(null);
@@ -24,16 +23,11 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Always show Launch at root */}
         <Route path="/" element={<Launch />} />
-
-        {/* Auth page */}
-        <Route path="/auth" element={<Auth />} />
-
-        {/* Protected routes */}
-        <Route path="/today" element={session ? <Today /> : <Navigate to="/auth" />} />
-        <Route path="/calendar" element={session ? <BigCalendar /> : <Navigate to="/auth" />} />
+        <Route path="/auth" element={!session ? <Auth /> : <Navigate to="/onboarding" />} />
         <Route path="/onboarding" element={session ? <Onboarding /> : <Navigate to="/auth" />} />
+        <Route path="/today" element={session ? <Today /> : <Navigate to="/auth" />} />
+        <Route path="/plan" element={session ? <Plan /> : <Navigate to="/auth" />} />
       </Routes>
     </Router>
   );
