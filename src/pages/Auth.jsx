@@ -15,7 +15,7 @@ const Auth = () => {
   const handleAuth = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+  
     let result;
     if (isSignUp) {
       result = await supabase.auth.signUp({ email, password });
@@ -24,16 +24,14 @@ const Auth = () => {
     }
   
     setLoading(false);
+  
     if (result.error) {
       alert(result.error.message);
-    } else {
-      // If successful, navigate to the next page
-      const user = result.user; // Ensure user exists here
-      if (user) {
-        navigate('/today'); // Redirect to the /today page
-      }
+    } else if (result.data?.user) {
+      navigate('/today');
     }
   };
+  
   
 
   const handleGoogleLogin = async () => {
