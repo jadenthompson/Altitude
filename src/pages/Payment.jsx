@@ -1,33 +1,34 @@
 import React from 'react';
-import { supabase } from '../utils/supabaseClient';
-import { useNavigate } from 'react-router-dom';
+import { loadStripe } from '@stripe/stripe-js';
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 const Payment = () => {
-  const navigate = useNavigate();
+  const handleCheckout = async () => {
+    const stripe = await stripePromise;
 
-  const handleConfirmPayment = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const response = await fetch('/api/create-checkout-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        priceId: import.meta.env.VITE_STRIPE_PRICE_ID,
+      }),
+    });
 
-    await supabase
-      .from('users')
-      .update({ payment_complete: true })
-      .eq('id', user.id);
-
-    navigate('/today');
+    const session = await response.json();
+    await stripe.redirectToCheckout({ sessionId: session.id });
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-600 to-pink-600 text-white px-4">
-      <div className="bg-white/10 p-8 rounded-xl shadow-xl w-full max-w-md text-center">
-        <h2 className="text-2xl font-bold mb-4">Payment</h2>
-        <p className="mb-6">This is a placeholder. Click below to simulate payment confirmation.</p>
+    <div className="min-h-screen flex items-center justify-center bg-slate-100">
+      <div className="bg-white p-8 rounded-xl shadow-md max-w-md text-center">
+        <h2 className="text-3xl font-bold mb-4 text-indigo-700">Upgrade to Pro</h2>
+        <p className="mb-6 text-gray-600">Unlock all features, priority support, and full access.</p>
         <button
-          onClick={handleConfirmPayment}
-          className="bg-white text-purple-700 font-semibold px-6 py-3 rounded-full hover:bg-purple-100 transition"
+          onClick={handleCheckout}
+          className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-3 rounded-full transition"
         >
-          Confirm Payment
+          Continue to Payment
         </button>
       </div>
     </div>

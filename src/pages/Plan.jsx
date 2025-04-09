@@ -13,19 +13,48 @@ const Plan = () => {
 
   const handleContinue = async () => {
     setLoading(true);
+
     const {
       data: { user },
+      error: userError,
     } = await supabase.auth.getUser();
 
-    // Save selected plan (optional — for later use)
-    if (user) {
-      await supabase
-        .from('users')
-        .update({ plan: selectedPlan })
-        .eq('id', user.id);
+    if (!user || userError) {
+      alert('Error fetching user.');
+      console.error('User fetch error:', userError);
+      setLoading(false);
+      return;
     }
 
-    navigate('/today'); // ✅ Always go to Today
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({ plan: selectedPlan })
+      .eq('id', user.id);
+
+    if (updateError) {
+      console.error('Plan update failed:', updateError);
+      alert('Plan was not saved. Please try again.');
+      setLoading(false);
+      return;
+    }
+
+    const { data: updatedUser, error: fetchError } = await supabase
+      .from('users')
+      .select('plan')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (fetchError) {
+      console.error('Plan fetch error:', fetchError);
+    }
+
+    if (updatedUser?.plan) {
+      navigate('/today');
+    } else {
+      alert('Plan was not saved. Please try again.');
+      console.error('Plan still null after update:', updatedUser);
+    }
+
     setLoading(false);
   };
 

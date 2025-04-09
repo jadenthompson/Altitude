@@ -61,7 +61,8 @@ const Onboarding = () => {
       alert('Error saving info: ' + error.message);
       console.error(error);
     } else {
-      navigate('/plan'); // ✅ Go to Plan selection after onboarding
+      // ✅ Force reload so App.jsx re-fetches fresh userMeta
+      window.location.href = '/plan';
     }
   };
 
