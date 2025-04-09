@@ -1,52 +1,52 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import logo from '../assets/altitude-logo.png'; // make sure this file is white and exists here
+import { motion } from 'framer-motion';
 
 const Launch = () => {
   const navigate = useNavigate();
-  const [animate, setAnimate] = useState(false);
-
-  useEffect(() => {
-    // Trigger animations after mount
-    setTimeout(() => setAnimate(true), 100);
-  }, []);
-
-  const handleStart = () => {
-    navigate('/today');
-  };
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-b from-[#6a6ff0] via-[#b967d0] to-[#f4a261] overflow-hidden flex items-center justify-center">
-      <div className="text-white text-center px-6 relative z-10">
-        <img
-          src={logo}
+    <div className="min-h-screen bg-gradient-to-br from-indigo-700 via-purple-700 to-pink-600 flex flex-col items-center justify-center text-white px-4 relative">
+      {/* Background blur effect */}
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-700 via-purple-700 to-pink-600 opacity-70 blur-3xl z-0" />
+
+      {/* Main content */}
+      <div className="relative z-10 text-center max-w-3xl">
+        <motion.img
+          src="/assets/altitude-logo.png"
           alt="Altitude Logo"
-          className={`w-32 md:w-44 mx-auto mb-6 transition-all duration-1000 ease-out transform ${
-            animate ? 'translate-y-0 opacity-100 scale-110' : '-translate-y-20 opacity-0 scale-50'
-          }`}
+          className="w-20 h-20 mx-auto mb-6"
+          initial={{ y: -40, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.8, ease: 'easeOut' }}
         />
-        <h1
-          className={`text-4xl md:text-6xl font-bold transition-opacity duration-1000 delay-300 ${
-            animate ? 'opacity-100' : 'opacity-0'
-          }`}
+
+        <motion.h1
+          className="text-4xl md:text-6xl font-extrabold mb-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.7 }}
         >
-          Altitude
-        </h1>
-        <p
-          className={`text-lg md:text-2xl mt-2 mb-10 transition-opacity duration-1000 delay-500 ${
-            animate ? 'opacity-90' : 'opacity-0'
-          }`}
+          Supercharged logistics for musicians on the move.
+        </motion.h1>
+
+        <motion.p
+          className="text-lg md:text-xl text-white/80 mb-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6, duration: 0.7 }}
         >
-          Go further with altitude
-        </p>
-        <button
-          onClick={handleStart}
-          className={`bg-[#2d2d85] hover:bg-[#1f1f70] text-white font-semibold text-lg md:text-xl px-8 py-4 rounded-full transition duration-300 shadow-lg ${
-            animate ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-          }`}
+          A travel logistics app — built for artists, by artists.
+        </motion.p>
+
+        <motion.button
+          onClick={() => navigate('/auth')}
+          className="bg-white text-indigo-700 font-semibold px-6 py-3 rounded-full shadow-lg hover:bg-indigo-100 transition"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
         >
           Get Started
-        </button>
+        </motion.button>
       </div>
     </div>
   );
