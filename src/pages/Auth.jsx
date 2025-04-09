@@ -1,148 +1,94 @@
-import React, { useEffect, useState } from 'react';
-import { supabase } from '../utils/supabaseClient';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../utils/supabaseClient';
 import { motion } from 'framer-motion';
 
-const Onboarding = () => {
+const Auth = () => {
+  const [isSignUp, setIsSignUp] = useState(true);
   const [email, setEmail] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [country, setCountry] = useState('');
-  const [role, setRole] = useState('artist');
-  const [artistType, setArtistType] = useState('solo');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) setEmail(user.email);
-    };
-    fetchUser();
-  }, []);
-
-  const handleSubmit = async (e) => {
+  const handleAuth = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return alert('User not found');
+    if (isSignUp) {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+      setLoading(false);
 
-    const updates = {
-      id: user.id,
-      email,
-      full_name: fullName,
-      country,
-      role,
-      artist_type: role === 'artist' ? artistType : null,
-      has_onboarded: true,
-    };
-
-    const { error } = await supabase.from('users').upsert(updates, { onConflict: ['id'] });
-    setLoading(false);
-
-    if (error) {
-      alert('Error saving your info: ' + error.message);
+      if (error) return alert(error.message);
+      alert('Check your email to confirm sign up.');
     } else {
-      navigate('/plan');
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      setLoading(false);
+
+      if (error) return alert(error.message);
+      if (data.session) navigate('/today');
     }
   };
 
   return (
-    <div className={`min-h-screen flex flex-col items-center justify-center px-4 relative transition duration-500 ${
-      darkMode ? 'bg-gray-900 text-white' : 'bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-400 text-white'
-    }`}>
-      {/* 🔙 Back to Home */}
-      <button
-        onClick={() => navigate('/')}
-        className="absolute top-4 left-4 text-white text-sm underline hover:text-indigo-200 z-20"
-      >
-        ← Back to Home
-      </button>
-
-      <div className="absolute inset-0 opacity-60 blur-3xl z-0" />
-
-      <div className="relative z-10 max-w-md w-full bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-xl text-center">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-700 via-purple-700 to-pink-600 flex items-center justify-center text-white px-4">
+      <div className="max-w-md w-full bg-white/10 backdrop-blur-md p-8 rounded-xl shadow-xl text-center">
         <motion.img
           src="/assets/altitude-logo.png"
           alt="Altitude Logo"
-          onClick={() => navigate('/')}
-          initial={{ scale: 0.5, opacity: 0 }}
+          className="w-16 h-16 mx-auto mb-6"
+          initial={{ scale: 0.7, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 1 }}
-          className="cursor-pointer w-16 h-16 mx-auto mb-6"
         />
 
-        <h2 className="text-2xl font-bold mb-4">🧭 Let’s get you set up</h2>
+        <h2 className="text-2xl font-bold mb-4">
+          {isSignUp ? 'Create Your Account' : 'Sign In'}
+        </h2>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="text"
-            placeholder="Full Name"
-            value={fullName}
-            required
-            onChange={(e) => setFullName(e.target.value)}
-            className="w-full p-3 rounded-xl text-black placeholder-gray-500 focus:outline-none"
-          />
-
+        <form onSubmit={handleAuth} className="space-y-4">
           <input
             type="email"
+            placeholder="Email"
             value={email}
-            disabled
-            className="w-full p-3 rounded-xl text-gray-500 bg-gray-100 cursor-not-allowed"
-          />
-
-          <input
-            type="text"
-            placeholder="Country"
-            value={country}
             required
-            onChange={(e) => setCountry(e.target.value)}
+            onChange={(e) => setEmail(e.target.value)}
             className="w-full p-3 rounded-xl text-black placeholder-gray-500 focus:outline-none"
           />
-
-          <select
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-            className="w-full p-3 rounded-xl text-black"
-          >
-            <option value="artist">🎤 Artist</option>
-            <option value="manager">🧑‍💼 Manager</option>
-            <option value="agency">🏢 Agency</option>
-            <option value="crew">🧑‍🚀 Crew</option>
-          </select>
-
-          {role === 'artist' && (
-            <select
-              value={artistType}
-              onChange={(e) => setArtistType(e.target.value)}
-              className="w-full p-3 rounded-xl text-black"
-            >
-              <option value="solo">Solo Artist</option>
-              <option value="band">Band / Group</option>
-            </select>
-          )}
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            required
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full p-3 rounded-xl text-black placeholder-gray-500 focus:outline-none"
+          />
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-3 rounded-xl transition duration-200"
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl transition"
           >
-            {loading ? 'Saving...' : 'Continue'}
+            {loading ? 'Loading...' : isSignUp ? 'Create Account' : 'Sign In'}
           </button>
         </form>
 
-        <div className="mt-4">
+        <p className="mt-6 text-sm text-white/80">
+          {isSignUp ? 'Already have an account?' : 'Don’t have an account?'}{' '}
           <button
-            onClick={() => setDarkMode(!darkMode)}
-            className="text-xs text-indigo-100 underline hover:text-white"
+            className="underline hover:text-indigo-200"
+            onClick={() => setIsSignUp(!isSignUp)}
           >
-            {darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            {isSignUp ? 'Sign In' : 'Sign Up'}
           </button>
-        </div>
+        </p>
       </div>
     </div>
   );
 };
 
-export default Onboarding;
+export default Auth;
