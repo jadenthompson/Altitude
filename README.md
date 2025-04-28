@@ -64,6 +64,39 @@ cp .env.example .env
 - Enable guest access or manager dashboards
 # React + Vite
 
+---
+
+### 🧩 In Progress / To Build
+
+- 🧼 Polish full site flow: make sure **every page is fully functional**
+  - Calendar view (month, week, day)
+  - Flight, Hotel, Weather Widgets (pulling real data)
+  - AI Assistant (OpenAI connected via Edge Function)
+  - Onboarding Page (sign up / sign in)
+  - Subscription Page (handle payment plans)
+
+- ✨ Animate & beautify widgets (Flight, Hotel, Weather, AI)
+  - Keep on-brand with Apple / Not Boring Weather aesthetic
+
+- 👥 Team Access & Collaboration
+  - Multiple users can view/edit artist tours
+  - Crew, managers, and promoters supported
+
+- 🗂 Tour Management Features
+  - Drag-and-drop guest list
+  - Hotel/Flight/Itinerary per event
+  - Calendar export (iCal link)
+  - Public share link with QR code
+
+- 🔐 Auth & Security
+  - Supabase Auth w/ roles
+  - Stripe for payments (Pro Plan access)
+  - Proper `.env` management (use `.env.example`)
+
+- 📲 Future: Mobile build, push notifications, and offline access
+
+---
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:
