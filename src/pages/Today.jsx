@@ -1,42 +1,76 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Sun, RefreshCw } from 'lucide-react';
 import FlightWidget from '../components/widgets/FlightWidget';
 import HotelWidget from '../components/widgets/HotelWidget';
 import WeatherWidget from '../components/widgets/WeatherWidget';
 import CityPhotoWidget from '../components/widgets/CityPhotoWidget';
 import CalendarSummaryWidget from '../components/widgets/CalendarSummaryWidget';
-import BottomNav from '../components/BottomNav';
 
-const Today = () => {
+
+
+
+export default function Today() {
+  const navigate = useNavigate();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [greeting, setGreeting] = useState('Welcome back');
+
+  // Greeting with dynamic time + name
+  useEffect(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) setGreeting('Good morning');
+    else if (hour < 18) setGreeting('Good afternoon');
+    else setGreeting('Good evening');
+  }, []);
+
+  // Refresh logic
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    setTimeout(() => {
+      window.location.reload(); // You can make widget-specific fetch calls here instead
+      setIsRefreshing(false);
+    }, 800);
+  };
+
+  // Widget cards
+  const widgets = [
+    { component: <FlightWidget />, onClick: () => navigate('/flights') },
+    { component: <HotelWidget />, onClick: () => navigate('/hotels') },
+    { component: <WeatherWidget />, onClick: () => navigate('/weather') },
+    { component: <CalendarSummaryWidget />, onClick: () => navigate('/calendar') },
+    { component: <CityPhotoWidget />, onClick: () => navigate('/venue') },
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-zinc-900 via-zinc-950 to-black text-white pb-28 px-4 pt-6">
-      <h2 className="text-2xl font-semibold mb-6">Welcome to Altitude</h2>
-
-      <div className="space-y-6">
-        <div className="rounded-2xl bg-white/5 backdrop-blur-md p-4 shadow-lg">
-          <FlightWidget />
-        </div>
-        <div className="rounded-2xl bg-white/5 backdrop-blur-md p-4 shadow-lg">
-          <HotelWidget />
-        </div>
-        <div className="rounded-2xl bg-white/5 backdrop-blur-md p-4 shadow-lg">
-          <WeatherWidget />
-        </div>
-
-        {/* Only show City Photo on mobile */}
-        <div className="rounded-2xl bg-white/5 backdrop-blur-md p-4 shadow-lg md:hidden">
-          <CityPhotoWidget />
-        </div>
-
-        <div className="rounded-2xl bg-white/5 backdrop-blur-md p-4 shadow-lg">
-          <CalendarSummaryWidget />
-        </div>
+    <div className="min-h-screen pb-32 px-4 pt-6 bg-background text-foreground">
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {greeting}, <span className="text-primary">Jaden</span>
+        </h1>
+        <button onClick={() => navigate('/settings')} className="p-2 rounded-full hover:bg-muted">
+          <Sun className="w-6 h-6" />
+        </button>
       </div>
 
-      <div className="fixed bottom-0 left-0 w-full z-50">
-        <BottomNav />
+      <button
+        onClick={handleRefresh}
+        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4 transition"
+      >
+        <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+        Refresh widgets
+      </button>
+
+      <div className="flex flex-col gap-6">
+        {widgets.map((widget, index) => (
+          <div
+            key={index}
+            onClick={widget.onClick}
+            className="rounded-2xl bg-card shadow-md p-4 cursor-pointer transition hover:scale-[1.01] active:scale-[0.98]"
+          >
+            {widget.component}
+          </div>
+        ))}
       </div>
     </div>
   );
-};
-
-export default Today;
+}

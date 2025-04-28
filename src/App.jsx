@@ -2,11 +2,13 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { supabase } from './utils/supabaseClient';
+
 import Launch from './pages/Launch';
 import Auth from './pages/Auth';
 import BigCalendar from './pages/BigCalendar';
 import Today from './pages/Today';
 import Profile from './pages/Profile';
+import EventDetails from './pages/EventDetails';
 
 const App = () => {
   const [session, setSession] = useState(null);
@@ -39,9 +41,7 @@ const App = () => {
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      if (session) {
-        getSessionAndUser();
-      }
+      if (session) getSessionAndUser();
     });
 
     return () => listener?.subscription.unsubscribe();
@@ -53,29 +53,11 @@ const App = () => {
     <Router>
       <Routes>
         <Route path="/" element={<Launch />} />
-        <Route
-          path="/auth"
-          element={
-            session ? <Navigate to="/today" /> : <Auth />
-          }
-
-        />
-        
-        <Route path="/profile" element={<Profile />} />
-
-<Route
-  path="/today"
-  element={
-    session ? <Today /> : <Navigate to="/auth" />
-  }
-/>
-        <Route
-          path="/calendar"
-          element={
-            session ? <BigCalendar /> : <Navigate to="/auth" />
-          }
-        />
-        {/* Optional fallback */}
+        <Route path="/auth" element={session ? <Navigate to="/today" /> : <Auth />} />
+        <Route path="/today" element={session ? <Today /> : <Navigate to="/auth" />} />
+        <Route path="/calendar" element={session ? <BigCalendar /> : <Navigate to="/auth" />} />
+        <Route path="/profile" element={session ? <Profile /> : <Navigate to="/auth" />} />
+        <Route path="/event/:id" element={session ? <EventDetails /> : <Navigate to="/auth" />} />
         <Route path="*" element={<Navigate to="/today" />} />
       </Routes>
     </Router>

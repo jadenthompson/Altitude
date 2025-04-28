@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -18,11 +18,22 @@ const eventTypes = {
   crew: '🧑‍🚀',
 };
 
+const typeColors = {
+  gig: 'bg-rose-500',
+  press: 'bg-sky-500',
+  hotel: 'bg-amber-500',
+  travel: 'bg-indigo-500',
+  crew: 'bg-teal-500',
+};
+
+const allTypes = Object.keys(eventTypes);
+
 const BigCalendar = () => {
   const [events, setEvents] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [view, setView] = useState(Views.MONTH);
   const [date, setDate] = useState(new Date());
+  const [activeFilters, setActiveFilters] = useState(allTypes);
   const [form, setForm] = useState({
     id: null,
     title: '',
@@ -42,6 +53,7 @@ const BigCalendar = () => {
             title: `${eventTypes[evt.type] || ''} ${evt.title}`,
             start: new Date(evt.start_time),
             end: new Date(evt.end_time || evt.start_time),
+            colorClass: typeColors[evt.type] || 'bg-gray-400',
           }));
         setEvents(mapped);
       }
@@ -87,6 +99,22 @@ const BigCalendar = () => {
     setShowModal(true);
   };
 
+  const filteredEvents = useMemo(() => {
+    return events.filter((event) => activeFilters.includes(event.type));
+  }, [events, activeFilters]);
+
+  const toggleFilter = (type) => {
+    setActiveFilters((prev) =>
+      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
+    );
+  };
+
+  const EventComponent = ({ event }) => (
+    <div className={`text-white text-sm px-2 py-1 rounded ${event.colorClass}`}>
+      {event.title}
+    </div>
+  );
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-white via-slate-100 to-slate-200 pb-28">
       {/* Header */}
@@ -101,26 +129,49 @@ const BigCalendar = () => {
         </h1>
       </motion.div>
 
+      {/* Filter Bar */}
+      <motion.div
+        layout
+        className="flex flex-wrap justify-center gap-2 mt-4 px-4"
+      >
+        {allTypes.map((type) => (
+          <motion.button
+            key={type}
+            layout
+            whileTap={{ scale: 0.95 }}
+            onClick={() => toggleFilter(type)}
+            className={`px-3 py-1 rounded-full text-sm font-medium transition ${
+              activeFilters.includes(type)
+                ? `${typeColors[type]} text-white`
+                : 'bg-muted text-muted-foreground'
+            }`}
+          >
+            {eventTypes[type]} {type.charAt(0).toUpperCase() + type.slice(1)}
+          </motion.button>
+        ))}
+      </motion.div>
+
       {/* Calendar */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2, duration: 0.5 }}
-        className="flex-1 w-full max-w-7xl mx-auto mt-6 px-4"
+        className="flex-1 w-full max-w-7xl mx-auto mt-4 px-4"
       >
         <Calendar
           localizer={localizer}
-          events={events}
+          events={filteredEvents}
           startAccessor="start"
           endAccessor="end"
           views={[Views.MONTH, Views.WEEK, Views.DAY, Views.AGENDA]}
           view={view}
-          onView={(newView) => setView(newView)}
+          onView={setView}
           date={date}
-          onNavigate={(newDate) => setDate(newDate)}
+          onNavigate={setDate}
           onSelectEvent={handleSelectEvent}
+          components={{ event: EventComponent }}
           className="bg-white rounded-xl shadow-xl p-4"
-          style={{ height: 'calc(100vh - 220px)' }}
+          style={{ height: 'calc(100vh - 250px)' }}
         />
       </motion.div>
 
